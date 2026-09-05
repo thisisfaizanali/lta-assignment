@@ -21,8 +21,12 @@ every threshold and its source.
   question set, §10.3 adaptivity, and impact-pricing (an optional question
   is only offered if it provably moves an output, checked by running the
   real engine — not asserted by a rule). Complete, still no UI.
-- **M5 (UI, Negotiation Card), M6 (run-throughs, walkthrough)** — not
-  started.
+- **M5** — Borrower-facing UI (`src/ui/`, `src/App.tsx`): the full flow —
+  opening, adaptive questions with a live-updating estimate, priced optional
+  questions, the four-output Statement, and the Negotiation Card — built
+  directly from the approved artboards in `design/`. Manually verified end to
+  end in a browser for Priya, Ravi and Anita. Complete.
+- **M6 (run-throughs, walkthrough)** — not started.
 
 ## Setup
 
