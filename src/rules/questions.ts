@@ -62,9 +62,15 @@ export interface Question {
  * tier) is optional in the Answers type itself, because §7.1 already
  * requires the engine to tolerate a skipped must-question gracefully.
  */
-const HARD_REQUIRED: readonly QuestionId[] = ['purpose', 'askAmount', 'netMonthlyIncome', 'incomeType', 'rent'];
+export const HARD_REQUIRED: readonly QuestionId[] = ['purpose', 'askAmount', 'netMonthlyIncome', 'incomeType', 'rent'];
 
-function hasBaseline(answers: Partial<Answers>): answers is Answers {
+/**
+ * Exported for the UI layer (M5): it needs the same "is there enough to
+ * compute anything yet" check this module already makes internally, rather
+ * than re-deriving HARD_REQUIRED itself. Visibility change only — no new
+ * logic, no changed behaviour.
+ */
+export function hasBaseline(answers: Partial<Answers>): answers is Answers {
   return HARD_REQUIRED.every((key) => answers[key] !== undefined);
 }
 
