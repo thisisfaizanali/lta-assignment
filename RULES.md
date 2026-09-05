@@ -546,10 +546,9 @@ inch.
 
 The restriction is on **claims**, not vocabulary. "Approve", "sanction" and
 "safe" appear throughout this document and must stay usable in explanations —
-what is banned is asserting an outcome the app cannot know. When the engine
-gains `why` strings (M3) this becomes a checkable list in `constants.ts`; there
-is nothing to check until those strings exist, so it lives here as specification
-for now.
+what is banned is asserting an outcome the app cannot know. As of M3, this is a
+checkable list — `BANNED_PHRASES` in `constants.ts` — and `personas.test.ts`
+scans every `why` string the engine actually produces against it.
 
 ---
 

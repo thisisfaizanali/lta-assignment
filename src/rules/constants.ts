@@ -74,6 +74,14 @@ export interface Product {
   amountCap: number;
   /** false = bands are approximate; RULES.md §2 flags these as coarse. */
   tuned: boolean;
+  /**
+   * §8's rate-rise stress only applies to floating-rate products. Not a
+   * numeric threshold — a categorical fact about how each product is
+   * typically priced in India (LAP/home floating, everything else fixed).
+   * Added in M3 because §8 needed it and RULES.md never classified products
+   * this way; no rate/amount/threshold changes.
+   */
+  floating: boolean;
 }
 
 export const PRODUCTS: Record<ProductId, Product> = {
@@ -87,6 +95,7 @@ export const PRODUCTS: Record<ProductId, Product> = {
     feeMin: 1_000,
     amountCap: 4_000_000,
     tuned: true,
+    floating: false,
   },
   lap: {
     id: 'lap',
@@ -100,6 +109,7 @@ export const PRODUCTS: Record<ProductId, Product> = {
     ltvLender: 0.7,
     amountCap: 50_000_000,
     tuned: true,
+    floating: true,
   },
   twowheeler_ev: {
     id: 'twowheeler_ev',
@@ -113,6 +123,7 @@ export const PRODUCTS: Record<ProductId, Product> = {
     ltvLender: 0.95,
     amountCap: 300_000,
     tuned: true,
+    floating: false,
   },
   business: {
     id: 'business',
@@ -123,6 +134,7 @@ export const PRODUCTS: Record<ProductId, Product> = {
     feePct: 0.02,
     amountCap: 5_000_000,
     tuned: false,
+    floating: false,
   },
   gold: {
     id: 'gold',
@@ -134,6 +146,7 @@ export const PRODUCTS: Record<ProductId, Product> = {
     ltvAdvised: 0.7,
     amountCap: 10_000_000,
     tuned: false,
+    floating: false,
   },
   home: {
     id: 'home',
@@ -147,6 +160,7 @@ export const PRODUCTS: Record<ProductId, Product> = {
     ltvLender: 0.8,
     amountCap: Infinity,
     tuned: false,
+    floating: true,
   },
 };
 
@@ -541,3 +555,20 @@ export const VERDICT_STANCE: Stance = 'cautious';
  * The engine must therefore track, per input, whether it was stated or filled.
  */
 export const HARD_STOP_GATES_REQUIRE_STATED_INPUTS = true;
+
+// ---------------------------------------------------------------------------
+// §12  Language the app may not use — checkable now that engine.ts (M3)
+// produces real `why` strings. Restricted to CLAIMS, not vocabulary: "safe"
+// and "approve" stay usable in explanations, so these are specific outcome
+// assertions, not bare words.
+// ---------------------------------------------------------------------------
+
+export const BANNED_PHRASES = [
+  'guaranteed',
+  'assured',
+  'pre-approved',
+  'will approve',
+  'will sanction',
+  'you will get',
+  'rbi says you can afford',
+] as const;

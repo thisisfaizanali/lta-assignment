@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { aprWithFees, emi, formatINR, totalInterest } from '../money';
+import { aprWithFees, emi, formatINR, principalFromEmi, totalInterest } from '../money';
 
 describe('emi', () => {
   it('matches a published amortisation-table figure', () => {
@@ -29,6 +29,24 @@ describe('emi', () => {
 
   it('rejects a negative rate', () => {
     expect(() => emi({ principal: 100_000, annualRatePercent: -1, months: 12 })).toThrow();
+  });
+});
+
+describe('principalFromEmi', () => {
+  it('inverts emi(): principal -> EMI -> principal round-trips within rounding', () => {
+    const loan = { principal: 500_000, annualRatePercent: 10, months: 24 };
+    const e = emi(loan);
+    const back = principalFromEmi(e, loan.annualRatePercent, loan.months);
+    expect(Math.abs(back - loan.principal)).toBeLessThan(50); // EMI was rounded to the rupee
+  });
+
+  it('handles the zero-interest edge case', () => {
+    expect(principalFromEmi(10_000, 0, 12)).toBe(120_000);
+  });
+
+  it('rejects a negative EMI or invalid tenure', () => {
+    expect(() => principalFromEmi(-1, 10, 12)).toThrow();
+    expect(() => principalFromEmi(10_000, 10, 0)).toThrow();
   });
 });
 

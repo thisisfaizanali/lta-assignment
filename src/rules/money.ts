@@ -32,6 +32,26 @@ export function emi(loan: LoanTerms): number {
 }
 
 /**
+ * The inverse of emi(): given a monthly payment a borrower can afford, what
+ * principal does that support? Affordability (lenderMax, safeMax) works
+ * backwards from an EMI ceiling to a principal, so this is the other half of
+ * the same formula — algebraically inverted, not a new model.
+ */
+export function principalFromEmi(emiAmount: number, annualRatePercent: number, months: number): number {
+  if (!(emiAmount >= 0)) throw new Error(`emiAmount must be >= 0, got ${emiAmount}`);
+  if (!(annualRatePercent >= 0)) throw new Error(`annualRatePercent must be >= 0, got ${annualRatePercent}`);
+  if (!(Number.isInteger(months) && months > 0)) throw new Error(`months must be a positive integer, got ${months}`);
+
+  const r = annualRatePercent / 100 / 12;
+  if (r === 0) {
+    return emiAmount * months;
+  }
+
+  const growth = Math.pow(1 + r, months);
+  return (emiAmount * (growth - 1)) / (r * growth);
+}
+
+/**
  * total = (rounded EMI × months) − principal. Uses the same rounded EMI the
  * borrower would actually be quoted, so this and emi() never disagree with
  * each other by a rounding artefact.
