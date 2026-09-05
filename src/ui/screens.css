@@ -1,0 +1,250 @@
+/* Layout for each screen. Two-column desktop layouts (matching the
+   1280px-wide artboards) collapse to one column below 720px, matching
+   Phone.dc.html's separately-drawn phone layout without duplicating markup. */
+
+/* ---------- Opening ---------- */
+.opening-grid {
+  flex-grow: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+.opening-hero {
+  padding: 40px 24px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  border-right: 1px solid var(--rule);
+  min-height: 0;
+}
+.opening-kfs {
+  padding: 40px 24px 32px;
+  display: flex;
+  flex-direction: column;
+}
+@media (max-width: 720px) {
+  .opening-grid {
+    grid-template-columns: 1fr;
+  }
+  .opening-hero {
+    border-right: none;
+    border-bottom: 1px solid var(--rule);
+  }
+}
+
+/* ---------- Question flow ---------- */
+.question-flow {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+.question-flow-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 18px 24px 10px;
+}
+.progress-dots {
+  display: grid;
+  gap: 3px;
+  padding: 0 24px 14px;
+}
+.question-flow-body {
+  flex-grow: 1;
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+}
+.question-flow-left {
+  padding: 32px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  border-right: 1px solid var(--rule);
+  min-height: 0;
+}
+.question-card {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  flex-grow: 1;
+}
+.question-flow-right {
+  padding: 32px 24px;
+  background: var(--paper2);
+  display: flex;
+  flex-direction: column;
+}
+@media (max-width: 720px) {
+  .question-flow-body {
+    grid-template-columns: 1fr;
+  }
+  .question-flow-left {
+    border-right: none;
+  }
+  .question-flow-right {
+    border-top: 1px solid var(--ink);
+  }
+}
+
+/* ---------- Sharpen ---------- */
+.sharpen-screen {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  padding-bottom: 24px;
+}
+.sharpen-header {
+  padding: 18px 24px 0;
+}
+.sharpen-intro {
+  display: grid;
+  grid-template-columns: 1.25fr 1fr;
+  gap: 32px;
+  padding: 28px 24px 0;
+}
+.sharpen-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.sharpen-current {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 9px;
+  padding-bottom: 4px;
+}
+.sharpen-list {
+  padding: 24px 24px 0;
+}
+.sharpen-row {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr 90px;
+  gap: 16px;
+  align-items: center;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--rule);
+}
+.sharpen-answer {
+  justify-self: end;
+  font-weight: 600;
+  color: var(--ink);
+}
+.sharpen-footer {
+  margin-top: auto;
+  padding: 22px 24px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+@media (max-width: 720px) {
+  .sharpen-intro {
+    grid-template-columns: 1fr;
+  }
+  .sharpen-row {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  .sharpen-answer {
+    justify-self: start;
+  }
+}
+
+/* ---------- Statement ---------- */
+.statement-screen {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 24px;
+}
+.statement-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 20px 24px 12px;
+}
+.statement-block {
+  padding: 26px 24px 0;
+}
+.statement-o1,
+.statement-two-col {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  gap: 32px;
+}
+.statement-col {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.statement-footer {
+  margin-top: auto;
+  padding: 20px 24px 0;
+}
+.statement-footer-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding-top: 14px;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+.tenure-table {
+  display: flex;
+  flex-direction: column;
+}
+.tenure-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 14px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--rule);
+}
+.tenure-head {
+  border-bottom: 1px solid var(--ink);
+}
+@media (max-width: 720px) {
+  .statement-o1,
+  .statement-two-col {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---------- Negotiation Card ---------- */
+.card-screen {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  background: var(--paper2);
+  padding: 24px 12px;
+}
+.card-inner {
+  width: 100%;
+  max-width: 390px;
+  background: var(--paper);
+  padding: 22px 20px 18px;
+  display: flex;
+  flex-direction: column;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .card-screen, .card-screen * {
+    visibility: visible;
+  }
+  .card-screen {
+    position: absolute;
+    inset: 0;
+    background: white;
+    padding: 0;
+  }
+  .card-inner {
+    max-width: none;
+    box-shadow: none;
+  }
+  .card-inner button {
+    display: none;
+  }
+}
