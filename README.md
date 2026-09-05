@@ -17,8 +17,12 @@ every threshold and its source.
   construction, lender-side vs. borrower-safe affordability, verdict gates,
   the cautious/favourable two-pass model, and stress testing. Complete —
   runnable via `runEngine(answers)` in `src/rules/engine.ts`, no UI yet.
-- **M4 (question graph), M5 (UI, Negotiation Card), M6 (run-throughs,
-  walkthrough)** — not started.
+- **M4** — The question graph (`src/rules/questions.ts`): the must/optional
+  question set, §10.3 adaptivity, and impact-pricing (an optional question
+  is only offered if it provably moves an output, checked by running the
+  real engine — not asserted by a rule). Complete, still no UI.
+- **M5 (UI, Negotiation Card), M6 (run-throughs, walkthrough)** — not
+  started.
 
 ## Setup
 
