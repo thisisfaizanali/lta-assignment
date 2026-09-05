@@ -14,7 +14,7 @@
  * doing so would mean showing numbers computed from an incomplete Answers
  * object the engine was never designed to accept.
  */
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { runEngine } from '../rules/engine';
 import { HARD_REQUIRED, MUST_QUESTIONS, hasBaseline, nextMustQuestions } from '../rules/questions';
 import type { Answers } from '../rules/types';
@@ -52,8 +52,14 @@ export function QuestionFlow({ answers, setAnswers, onMustSetDone }: QuestionFlo
 
   const outputs = useMemo(() => (hasBaseline(answers) ? runEngine(answers) : undefined), [answers]);
 
+  // Calling onMustSetDone() (which updates App's screen state) directly in
+  // the render body triggers React's "setState while rendering a different
+  // component" warning — correct fix is to defer it to an effect.
+  useEffect(() => {
+    if (!current) onMustSetDone();
+  }, [current, onMustSetDone]);
+
   if (!current) {
-    onMustSetDone();
     return null;
   }
 
