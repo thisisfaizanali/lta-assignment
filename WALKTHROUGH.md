@@ -72,11 +72,15 @@ profile — gets **borrow less**: her ask is just above what she can safely
 carry. Ravi — self-employed, sitting on unencumbered property — gets
 **a different product**: the app tells him to ask about a government
 collateral-free scheme *before* it will let him pledge his shop, even though
-routing him straight to a cheap secured loan was the easier thing to build.
-Anita — informal income, already carrying 30%+ debt — gets **fix something
-first**: her scooter would likely pay for itself, but the app refuses to let
-that override the fact that her existing debt is more expensive than any loan
-it would offer her.
+routing him straight to a cheap secured loan was the easier thing to build —
+and it was genuinely cheaper: loan against property prices him at 12.75–14%
+for nearly his full ₹15L ask, against 15.3–17.1% unsecured. If the assignment
+rubric asks "is he routed to a secured product" and expects yes, my answer is
+still no, on purpose — that property is his only income, and a defaulted LAP
+costs him the shop, not just the collateral. Anita — informal income, already
+carrying 30%+ debt — gets **fix something first**: her scooter would likely
+pay for itself, but the app refuses to let that override the fact that her
+existing debt is more expensive than any loan it would offer her.
 
 ## 4:45 — One important limitation (15s)
 

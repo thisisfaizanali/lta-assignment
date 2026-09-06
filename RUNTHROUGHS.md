@@ -2,9 +2,11 @@
 
 Every number below is real output from `runEngine()` (`src/rules/engine.ts`),
 captured directly from the app — not hand-computed, not illustrative. Any
-figure here should match what you see running the app with the same answers.
-See [RULES.md](RULES.md) for the rule behind every number, and
-[README.md](README.md) for how to run the app yourself.
+figure here should match what you see running the app with the same answers,
+and is now locked against silent drift by a headline snapshot test
+(`personas.test.ts`, "regression lock"). See [RULES.md](RULES.md) for the rule
+behind every number, and [README.md](README.md) for how to run the app
+yourself.
 
 Format per persona: key answers → the four outputs → major reasoning →
 uncertainty still open → the Negotiation Card.
@@ -96,11 +98,11 @@ Household expenses were **not** given — not stated anywhere in the brief.
 
 | Output | Value | Why |
 |---|---|---|
-| **O1 — Verdict** | **A DIFFERENT PRODUCT** | "Your ask is within Mudra's ₹20,00,000 collateral-free limit for a micro enterprise. Ask about Mudra (Tarun Plus) before considering anything secured — pledging property to raise an amount a government scheme can already cover is very likely the wrong trade." |
+| **O1 — Verdict** | **A DIFFERENT PRODUCT** | "Your ask is within Mudra's ₹20,00,000 collateral-free limit for a micro enterprise. Ask about Mudra (Tarun Plus) before considering anything secured — pledging property to raise an amount a government scheme can already cover is very likely the wrong trade. The ₹20,00,000 Tarun Plus tier generally requires having already repaid a prior Tarun loan — as a first-time borrower you may be limited to around ₹10,00,000. Ask about both tiers. If Mudra isn't available to you, a secured option would be cheaper but would put your stated livelihood or only home at risk." |
 | **Product routed** | Business loan (unsecured) — **not** loan against property | The Mudra check runs *before* any secured-override math, and takes precedence over it entirely. |
 | **O2 — Estimated lender-side maximum** | ₹5,64,819 – ₹5,70,941 | 45% FOIR on his *ITR-assessed* income (~₹35,000–36,250/month) — what a lender actually credits, not what the shop takes in. |
 | **O2 — Safe to carry (use this)** | ₹1,83,722 – ₹4,27,557 | Half his committable surplus, from his real bad-month cash figure (₹40,000), over a 36-month term. |
-| **O3 — Fair rate** | 15.3% – 17.1% | Unsecured business band, adjusted for a documented (GST + current account + 14-year vintage) self-employed profile and a thin credit file. |
+| **O3 — Fair rate** | 15.3% – 17.1% | Unsecured business band, adjusted for a documented (GST + current account + 14-year vintage) self-employed profile and a thin credit file, *and* flagged: as a first-time borrower with no collateral, an unsecured lender may decline him outright — this band prices the loan, not his odds of getting one. |
 | **O3 — All-in APR** | 17.0% – 17.6% | |
 | **O4 — EMI ceiling** | ₹6,500 – ₹15,000/month | 30% of his surplus is the binding limit. |
 | **Stress test** | Survives a 20% income drop | |
@@ -124,7 +126,26 @@ LAP he hasn't confirmed he needs.
 The gap between his two maximums is the sharpest illustration of "lender
 reality vs. borrower reality" in this document: a lender credits only his ITR
 (~₹35,000/month), while his real cash flow is ₹40,000–80,000/month — the
-formal system simply cannot see most of what his shop actually earns.
+formal system simply cannot see most of what his shop actually earns. It is
+also worth being blunt about: his ₹15,00,000 ask clears *neither* maximum —
+not the lender estimate (₹5.6–5.7L) and not the safe amount (₹1.8–4.3L). The
+Statement says so directly, independent of the verdict headline, and the Card
+below is built around the safe figure, not the ask.
+
+**Anticipating the obvious challenge:** the assignment's own rubric asks
+outright whether Ravi is routed to a secured product, and this app's answer is
+no — a deliberate call, not an oversight, worth confronting with numbers
+rather than asserting it. Routed to loan against property instead, his real
+₹45,00,000 of unencumbered collateral would qualify him for **12.75–14.0%**
+and an estimated lender-side maximum of **₹13,61,000–₹13,64,000** — nearly his
+full ask, at a materially cheaper rate than the unsecured 15.3–17.1% shown
+above. That trade is real, and a purely numbers-first system would take it.
+This app doesn't, because that property is also his only source of income: if
+the business has a bad year, a defaulted LAP costs him the shop, not just the
+collateral. The Mudra-first routing exists precisely to offer a comparable
+amount (~₹10–20L) without that risk. If Mudra genuinely isn't available to
+him, LAP's numbers above are exactly what he'd be trading the collateral risk
+for — the app shows them rather than hiding the road not taken.
 
 ### What's still uncertain
 
@@ -138,10 +159,12 @@ answered, even though it remains central to his case narratively.
 
 ### Negotiation Card outcome
 
-Terms built around his safe amount (₹4,27,557): 15.3–17.1% interest, 17.0–17.6%
-all-in APR, EMI up to ₹15,000, over 36 months — priced as an **unsecured**
-business loan, consistent with the verdict's own advice not to pledge the shop
-until Mudra is ruled out.
+The Card states plainly that he asked for ₹15,00,000 and is built around
+₹4,27,557 instead — the app doesn't silently substitute a smaller number
+without saying so. Terms: 15.3–17.1% interest, 17.0–17.6% all-in APR, EMI up
+to ₹15,000, over 36 months — priced as an **unsecured** business loan,
+consistent with the verdict's own advice not to pledge the shop until Mudra is
+ruled out.
 
 ---
 
@@ -163,10 +186,15 @@ an electric scooter to increase delivery capacity.
 unanswered — nothing in the brief states it, and the app does not infer a bad
 score merely because the rest of her situation is difficult. Emergency
 savings entered as 0 (a reasonable inference given 8 months on one income and
-three running app loans). No rupee figure was ever given anywhere in the
-brief for what "doubling delivery runs" would actually earn, so the
-productive-uplift question was left unanswered — the app correctly does not
-invent one.
+three running app loans). Household expenses entered as ₹20,000/month — not
+stated in the brief; a plausible Hubballi figure for two children plus a
+non-earning adult, and the honest value, not the more flattering one: leaving
+it unstated would have let the cautious-pass ratio guess (30–45% of a much
+smaller income) understate her real outgoings and made her stress test pass,
+which would have undersold exactly the exposure this persona exists to show.
+No rupee figure was ever given anywhere in the brief for what "doubling
+delivery runs" would actually earn, so the productive-uplift question was
+left unanswered — the app correctly does not invent one.
 
 ### The four outputs
 
@@ -197,6 +225,15 @@ anyway because it "pays for itself." Her stated projected extra earnings
 were never quantified, so the productive-uplift calculation correctly
 contributes nothing here — the app does not credit income that was never
 stated.
+
+Worth naming directly: informal income's 50% assessed-income discount can, for
+a different borrower, put the estimated lender-side maximum *below* what they
+could actually safely carry — the one case where this app's "a lender offers
+more than is safe" framing runs backwards (`RULES.md` §3, `affordability.test.ts`
+has a dedicated case proving it's still reachable). It does **not** happen for
+Anita once her real household costs are counted: her lender-side estimate
+(₹77,628) stays far above her safe amount (₹17,836). Checked directly rather
+than assumed.
 
 ### What's still uncertain
 
@@ -231,3 +268,8 @@ negotiate one they should.
 - **Unknown is never zero, and it's never assumed favourable either**: Anita's
   credit score stays unanswered rather than assumed bad; Ravi's productive
   purpose gets no uplift credit because no figure was ever given.
+- **Age caps tenure, but none of the three trigger it.** Priya (29), Ravi (42)
+  and Anita (35) all have decades of working life left, so the retirement-age
+  cap added in this review's second pass never binds for any of them —
+  `affordability.test.ts` carries the dedicated older-borrower case that proves
+  it's live rather than decorative, since no persona here could.
