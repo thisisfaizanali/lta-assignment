@@ -34,6 +34,18 @@ export const GOLD_LTV_TIERS = [
 export const MUDRA_COLLATERAL_FREE_LIMIT = 2_000_000;
 
 /**
+ * Tarun Plus's ₹20L ceiling generally requires having already repaid a prior
+ * Tarun loan. A genuine first-time Mudra borrower more realistically tops out
+ * near the base Tarun tier. Deliberately NOT used to gate routing (routing
+ * still uses MUDRA_COLLATERAL_FREE_LIMIT) — gating on it would collapse the
+ * Mudra-first routing for a first-timer like Ravi straight into the secured
+ * branch, destroying the exact "surface the collateral-free scheme before
+ * suggesting collateral" demonstration §2.1 exists for. Surfaced only as a
+ * caveat in the routing explanation.
+ */
+export const MUDRA_FIRST_TIME_LIKELY_LIMIT = 1_000_000;
+
+/**
  * RBI (Pre-payment Charges on Loans) Directions, 2025, w.e.f. 1 Jan 2026.
  * No prepayment penalty and no lock-in on FLOATING-rate loans to individuals
  * (non-business), and to individuals/MSEs for business up to this limit.

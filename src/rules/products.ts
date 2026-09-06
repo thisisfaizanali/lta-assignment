@@ -7,12 +7,14 @@
 import {
   GOLD_LTV_TIERS,
   MUDRA_COLLATERAL_FREE_LIMIT,
+  MUDRA_FIRST_TIME_LIKELY_LIMIT,
   PRODUCTS,
   SECURED_OVERRIDE_MIN_SAVING_PP,
   type Product,
   type ProductId,
   type Purpose,
 } from './constants';
+import { formatINR } from './money';
 import type { Answers, Explained } from './types';
 
 /**
@@ -96,11 +98,15 @@ export function routeProduct(
         risksLivelihood: answers.collateralIsLivelihoodOrOnlyHome === true,
       };
     }
+    const firstTimeCaveat =
+      answers.creditScore === 'never_borrowed'
+        ? ` The ₹20,00,000 Tarun Plus tier generally requires having already repaid a prior Tarun loan — as a first-time borrower you may be limited to around ${formatINR(MUDRA_FIRST_TIME_LIKELY_LIMIT)}. Ask about both tiers.`
+        : '';
     return {
       product: {
         value: defaultId,
-        why: `Your ask is within Mudra's ₹20,00,000 collateral-free limit for a micro enterprise. Ask about Mudra (Tarun Plus) before considering anything secured — pledging property to raise an amount a government scheme can already cover is very likely the wrong trade.${securedAlternative ? ` If Mudra isn't available to you, ${securedAlternative.risksLivelihood ? 'a secured option would be cheaper but would put your stated livelihood or only home at risk' : 'a secured option would be materially cheaper'}.` : ''}`,
-        from: ['incomeType', 'askAmount'],
+        why: `Your ask is within Mudra's ₹20,00,000 collateral-free limit for a micro enterprise. Ask about Mudra (Tarun Plus) before considering anything secured — pledging property to raise an amount a government scheme can already cover is very likely the wrong trade.${firstTimeCaveat}${securedAlternative ? ` If Mudra isn't available to you, ${securedAlternative.risksLivelihood ? 'a secured option would be cheaper but would put your stated livelihood or only home at risk' : 'a secured option would be materially cheaper'}.` : ''}`,
+        from: ['incomeType', 'askAmount', 'creditScore'],
       },
       mudraFlag: true,
       securedAlternative,

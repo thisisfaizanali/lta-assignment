@@ -56,6 +56,24 @@ describe('routeProduct — Mudra precedence (Ravi\'s case)', () => {
     const routing = routeProduct(answers, rateFor(answers));
     expect(routing.mudraFlag).toBe(false);
   });
+
+  // Review finding 5: Tarun Plus's ₹20L ceiling generally requires a
+  // previously repaid Tarun loan, which a first-timer like Ravi doesn't have.
+  // Routing keeps the ₹20L limit (see the constant's own comment for why),
+  // but the explanation must say so.
+  it('warns a first-time (never_borrowed) borrower that ₹20L may not apply to them, without changing the routing', () => {
+    const answers = baseAnswers({ purpose: 'business', askAmount: 1_500_000, incomeType: 'self_employed', creditScore: 'never_borrowed' });
+    const routing = routeProduct(answers, rateFor(answers));
+    expect(routing.mudraFlag).toBe(true);
+    expect(routing.product.value).toBe('business');
+    expect(routing.product.why.toLowerCase()).toContain('first-time');
+  });
+
+  it('does not add the first-timer caveat for a borrower with a known score', () => {
+    const answers = baseAnswers({ purpose: 'business', askAmount: 1_500_000, incomeType: 'self_employed', creditScore: 750 });
+    const routing = routeProduct(answers, rateFor(answers));
+    expect(routing.product.why.toLowerCase()).not.toContain('first-time');
+  });
 });
 
 describe('routeProduct — secured override and livelihood protection', () => {
