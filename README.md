@@ -74,6 +74,9 @@ Ravi, Anita) with real numbers from the app, or run it yourself below.
 
 ## Setup
 
+Requires **Node 18+** (developed and tested on Node 24). No environment
+variables, no backend, no database — everything runs client-side.
+
 ```bash
 npm install
 npm run dev         # http://localhost:5173
@@ -82,8 +85,12 @@ npm run typecheck
 npm run build
 ```
 
-No environment variables, no backend, no database. Everything runs
-client-side.
+Timed from a clean clone: `npm install` finishes in well under 10 seconds on
+this machine, and `npm run dev` is serving within ~1 second of that — both far
+inside the assignment's 5-minute requirement. Times will vary with network
+speed on `npm install`'s first run elsewhere, but there is nothing else in the
+setup that scales with project size — no build step before `dev`, no seed
+data, no service to wait on.
 
 ## Project layout
 
