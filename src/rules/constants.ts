@@ -606,6 +606,16 @@ export const HARD_STOP_GATES_REQUIRE_STATED_INPUTS = true;
 // assertions, not bare words.
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// Display/impact epsilons — shared so "is this difference worth mentioning"
+// means the same thing everywhere it's asked: questions.ts's impact ranking,
+// format.ts's band-collapse rendering, and engine.ts's collapse-reason text
+// all compare against the SAME numbers, so they can never disagree with each
+// other about whether a band has collapsed.
+// ---------------------------------------------------------------------------
+export const EPS_MONEY = 100; // rupees — well above rounding noise, well below a meaningful movement
+export const EPS_PERCENT = 0.05; // percentage points
+
 export const BANNED_PHRASES = [
   'guaranteed',
   'assured',

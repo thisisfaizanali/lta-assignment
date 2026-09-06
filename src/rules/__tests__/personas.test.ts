@@ -186,6 +186,21 @@ describe('Anita — informal income, existing distress, productive purpose', () 
   it('does NOT show the informal-income inversion once her real household costs are counted — lenderMax stays the larger number', () => {
     expect(outputs.lenderMax.value.hi).toBeGreaterThan(outputs.safeMax.value.hi);
   });
+
+  // Two genuinely different collapse mechanisms fire for her at once — rate
+  // pinned at the ceiling (lenderMax, aprBand) vs. every surplus input stated
+  // (safeMax, emiCeiling) — and the why strings must not cross-attribute.
+  it('does not claim a product ceiling for the outputs that collapsed because every input was stated', () => {
+    expect(outputs.safeMax.why).toContain('You told us everything this depends on');
+    expect(outputs.safeMax.why).not.toContain('product ceiling');
+    expect(outputs.emiCeiling.why).toContain('You told us everything this depends on');
+    expect(outputs.emiCeiling.why).not.toContain('product ceiling');
+  });
+
+  it('does claim a pinned rate for the outputs that collapsed because the rate is pinned', () => {
+    expect(outputs.lenderMax.why).toContain('product ceiling');
+    expect(outputs.aprBand.why).toContain('product ceiling');
+  });
 });
 
 describe('honesty — RULES.md §12', () => {

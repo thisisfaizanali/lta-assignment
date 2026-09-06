@@ -28,6 +28,8 @@
 import {
   CARD_UTILISATION_HIGH,
   COSTLY_DEBT_THRESHOLD_APR,
+  EPS_MONEY,
+  EPS_PERCENT,
   GIG_MIN_HISTORY_MONTHS,
   PRODUCTIVE_UPLIFT_CAP_OF_INCOME,
   UNKNOWNS,
@@ -325,9 +327,6 @@ export function nextMustQuestions(answers: Partial<Answers>): Question[] {
 export function isMustSetComplete(answers: Partial<Answers>): boolean {
   return MUST_QUESTIONS.every((q) => answers[q.id] !== undefined);
 }
-
-export const EPS_MONEY = 100; // rupees — well above rounding noise, well below a meaningful movement
-export const EPS_PERCENT = 0.05; // percentage points
 
 function bandDiffers(a: Band, b: Band, epsilon: number): boolean {
   return Math.abs(a.lo - b.lo) > epsilon || Math.abs(a.hi - b.hi) > epsilon;

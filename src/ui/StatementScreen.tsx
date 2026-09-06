@@ -13,12 +13,7 @@ import { PRODUCTS } from '../rules/constants';
 import { emi, totalInterest } from '../rules/money';
 import type { Outputs } from '../rules/types';
 import { BandVisual } from './Band';
-import { formatINR, formatMoneyBand, formatPercentBand, isPinnedMoneyBand, isPinnedPercentBand, PINNED_BAND_NOTE } from './format';
-
-/** Appends the pinned-band note to a why string when the band has collapsed to a point (review finding 9). */
-function withPinnedNote(why: string, pinned: boolean): string {
-  return pinned ? `${why} ${PINNED_BAND_NOTE}` : why;
-}
+import { formatINR, formatMoneyBand, formatPercentBand } from './format';
 
 const VERDICT_LABEL: Record<Outputs['verdict']['value'], string> = {
   dont_borrow: "DON'T BORROW",
@@ -133,14 +128,14 @@ export function StatementScreen({ outputs, askAmount, tenureMonths, onOpenCard, 
           <div className="out">O2 · Two different maximums</div>
           <OutputRow
             label={`Estimated lender-side maximum${lenderBinds ? ' ← use this' : ''}`}
-            why={withPinnedNote(outputs.lenderMax.why, isPinnedMoneyBand(outputs.lenderMax.value))}
+            why={outputs.lenderMax.why}
             value={formatMoneyBand(outputs.lenderMax.value)}
             color="var(--blue)"
             underline={lenderBinds}
           />
           <OutputRow
             label={`You can safely carry${lenderBinds ? '' : ' ← use this'}`}
-            why={withPinnedNote(outputs.safeMax.why, isPinnedMoneyBand(outputs.safeMax.value))}
+            why={outputs.safeMax.why}
             value={formatMoneyBand(outputs.safeMax.value)}
             color="var(--green)"
             underline={!lenderBinds}
@@ -159,7 +154,7 @@ export function StatementScreen({ outputs, askAmount, tenureMonths, onOpenCard, 
           <div className="out">O3 · A fair rate, and the real one</div>
           <OutputRow
             label="Fair interest rate"
-            why={withPinnedNote(outputs.rateBand.why, isPinnedPercentBand(outputs.rateBand.value))}
+            why={outputs.rateBand.why}
             value={formatPercentBand(outputs.rateBand.value)}
           />
           <OutputRow label="All-in APR, fees included" why="" value={formatPercentBand(outputs.aprBand.value)} underline />
@@ -181,9 +176,7 @@ export function StatementScreen({ outputs, askAmount, tenureMonths, onOpenCard, 
             </div>
             <div style={{ fontSize: 14, color: 'var(--muted)' }}>per month, ceiling</div>
           </div>
-          <div style={{ fontSize: 14, lineHeight: 1.5, maxWidth: '48ch' }}>
-            {withPinnedNote(outputs.emiCeiling.why, isPinnedMoneyBand(outputs.emiCeiling.value))}
-          </div>
+          <div style={{ fontSize: 14, lineHeight: 1.5, maxWidth: '48ch' }}>{outputs.emiCeiling.why}</div>
 
           <div style={{ marginTop: 6, padding: '13px 16px', border: `1px solid ${outputs.stress.value.survives ? 'var(--rule)' : 'var(--red)'}` }}>
             <div className="eyebrow" style={{ color: outputs.stress.value.survives ? undefined : 'var(--red)' }}>

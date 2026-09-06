@@ -14,7 +14,7 @@
  * pass alone (VERDICT_STANCE) -> compute the stress test from the cautious
  * pass's own numbers.
  */
-import { PRODUCTS, PRUDENT_TENURE_MONTHS, type Stance } from './constants';
+import { EPS_MONEY, EPS_PERCENT, PRODUCTS, PRUDENT_TENURE_MONTHS, type Stance } from './constants';
 import { computeLenderMax, computeSafeMax, computeStressTest, type SafeMaxResult } from './affordability';
 import { assessIncome } from './income';
 import { routeProduct } from './products';
@@ -27,6 +27,34 @@ const STANCES: Stance[] = ['cautious', 'favourable'];
 function band(lo: number, hi: number): Band {
   return lo <= hi ? { lo, hi } : { lo: hi, hi: lo };
 }
+
+function collapsed(b: Band, epsilon: number): boolean {
+  return Math.abs(b.hi - b.lo) <= epsilon;
+}
+
+/**
+ * Review finding 9 follow-up: a collapsed band (cautious === favourable) can
+ * happen for two genuinely different reasons, and conflating them produces a
+ * false explanation. Authored here, not in the UI, per the same rule as every
+ * other why string (CLAUDE.md: generated where the number is computed).
+ *
+ * 1. RATE PINNED — the personalised rate anchor clamps to the SAME product
+ *    ceiling under both stances (rate.ts's `Math.max(base_lo, Math.min(...))`
+ *    clamp), so anything downstream of the rate (lenderMax's topRatePercent,
+ *    the APR) collapses too. Verified true rather than inferred: compares the
+ *    two stances' actual anchor points directly.
+ * 2. EVERY CONTRIBUTING INPUT STATED — safeMax/emiCeiling never touch the
+ *    rate ceiling at all; their own inputs (householdExpenses,
+ *    emergencySavingsMonths — the only two of their inputs with a real
+ *    cautious/favourable spread; existingEmi's spread is degenerate by
+ *    construction and dependents/bounce never vary the surplus formula) were
+ *    simply all stated, so there was nothing left to widen for.
+ *
+ * When a band collapses for neither verified reason, no note is appended —
+ * silence over a guessed cause.
+ */
+const RATE_PINNED_NOTE = 'Your profile already pins this at the product ceiling — there is no spread left to show.';
+const ALL_STATED_NOTE = 'You told us everything this depends on, so there is no range left to show.';
 
 /**
  * Which Answers fields the engine had to fill in from UNKNOWNS because they
@@ -100,17 +128,26 @@ export function runEngine(answers: Answers): Outputs {
     (cautious.rate.band.lo + cautious.rate.band.hi) / 2,
   );
 
+  // See collapsed()/RATE_PINNED_NOTE/ALL_STATED_NOTE above.
+  const ratePinned = cautious.rate.band.lo === favourable.rate.band.lo;
+  const surplusInputsStated = answers.householdExpenses !== undefined && answers.emergencySavingsMonths !== undefined;
+
+  const lenderMaxBand = band(cautious.lenderMax.value, favourable.lenderMax.value);
+  const safeMaxBand = band(cautious.safeMax.safeMax.value, favourable.safeMax.safeMax.value);
+  const aprBandValue = band(cautious.aprPercent, favourable.aprPercent);
+  const emiCeilingBand = band(cautious.safeMax.emiCeiling.value, favourable.safeMax.emiCeiling.value);
+
   return {
     verdict,
     product: routing.product,
     lenderMax: {
-      value: band(cautious.lenderMax.value, favourable.lenderMax.value),
-      why: cautious.lenderMax.why,
+      value: lenderMaxBand,
+      why: cautious.lenderMax.why + (ratePinned && collapsed(lenderMaxBand, EPS_MONEY) ? ` ${RATE_PINNED_NOTE}` : ''),
       from: cautious.lenderMax.from,
     },
     safeMax: {
-      value: band(cautious.safeMax.safeMax.value, favourable.safeMax.safeMax.value),
-      why: cautious.safeMax.safeMax.why,
+      value: safeMaxBand,
+      why: cautious.safeMax.safeMax.why + (surplusInputsStated && collapsed(safeMaxBand, EPS_MONEY) ? ` ${ALL_STATED_NOTE}` : ''),
       from: cautious.safeMax.safeMax.from,
     },
     rateBand: {
@@ -130,13 +167,15 @@ export function runEngine(answers: Answers): Outputs {
       from: ['creditScore', 'cardUtilisation', 'bounceInLast12Months'],
     },
     aprBand: {
-      value: band(cautious.aprPercent, favourable.aprPercent),
-      why: 'The nominal rate plus processing fee and GST, expressed as one annual cost — this is the number to compare against any lender quote, not the headline rate.',
+      value: aprBandValue,
+      why:
+        'The nominal rate plus processing fee and GST, expressed as one annual cost — this is the number to compare against any lender quote, not the headline rate.' +
+        (ratePinned && collapsed(aprBandValue, EPS_PERCENT) ? ` ${RATE_PINNED_NOTE}` : ''),
       from: ['askAmount'],
     },
     emiCeiling: {
-      value: band(cautious.safeMax.emiCeiling.value, favourable.safeMax.emiCeiling.value),
-      why: cautious.safeMax.emiCeiling.why,
+      value: emiCeilingBand,
+      why: cautious.safeMax.emiCeiling.why + (surplusInputsStated && collapsed(emiCeilingBand, EPS_MONEY) ? ` ${ALL_STATED_NOTE}` : ''),
       from: cautious.safeMax.emiCeiling.from,
     },
     stress,
