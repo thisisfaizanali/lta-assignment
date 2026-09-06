@@ -239,12 +239,24 @@
     inset: 0;
     background: white;
     padding: 0;
+    /* Chrome/Firefox both default to stripping some colour under print
+       "economy" mode — the verdict borders and coloured figures are the
+       point of this page, so force them to survive. */
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
   }
   .card-inner {
-    max-width: none;
+    /* Kept at its phone-card width rather than stretching to the full page —
+       this is meant to read as a compact card, not a full-page document. */
     box-shadow: none;
   }
   .card-inner button {
+    display: none;
+  }
+  /* Review item 5: an interactive rate-input box has no business on a printed
+     page — empty it prints as a blank bordered control, and there's nowhere
+     to type into paper either way. Hide the whole live-comparison block. */
+  .card-quote-block {
     display: none;
   }
 }

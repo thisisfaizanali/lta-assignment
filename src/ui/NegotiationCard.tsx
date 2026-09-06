@@ -96,7 +96,7 @@ export function NegotiationCard({ outputs, askAmount, tenureMonths, onBack }: Ne
           </div>
         </div>
 
-        <div style={{ marginTop: 18, paddingTop: 16, borderTop: '1px solid var(--rule)' }}>
+        <div className="card-quote-block" style={{ marginTop: 18, paddingTop: 16, borderTop: '1px solid var(--rule)' }}>
           <div className="sec">If a lender quotes you a rate</div>
           <div className="field" style={{ marginTop: 8, maxWidth: 160 }}>
             <input
