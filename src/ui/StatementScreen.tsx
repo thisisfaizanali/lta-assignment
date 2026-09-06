@@ -43,7 +43,24 @@ interface StatementScreenProps {
 export function StatementScreen({ outputs, askAmount, tenureMonths, onOpenCard, onChangeAnswer }: StatementScreenProps) {
   const product = PRODUCTS[outputs.product.value];
   const midRate = (outputs.rateBand.value.lo + outputs.rateBand.value.hi) / 2;
-  const principal = Math.min(askAmount, outputs.safeMax.value.hi || askAmount) || askAmount;
+
+  // Review finding 7/8: safeMax isn't always the tighter number — for an
+  // informal/gig borrower the lender's heavily-discounted assessed income can
+  // put its ceiling BELOW what the borrower could actually safely carry.
+  // bindingCap/bindingLabel below always point at whichever is actually lower.
+  const lenderBinds = outputs.lenderMax.value.hi <= outputs.safeMax.value.hi;
+  const bindingCap = lenderBinds ? outputs.lenderMax.value.hi : outputs.safeMax.value.hi;
+  const bindingLabel = lenderBinds ? 'the estimated lender-side maximum' : 'what you can safely carry';
+
+  // This used to always take safeMax as the tighter cap; now uses bindingCap.
+  const principal = Math.min(askAmount, bindingCap || askAmount) || askAmount;
+
+  // Review finding 4: whichever verdict fires can end up saying nothing about
+  // the ask amount itself — "different_product" (Ravi) is entirely about the
+  // product, not the size. The gap is stated here independently of which gate
+  // matched. Skipped when the verdict is already "borrow_less", since that
+  // gate's own why string already says this.
+  const showAmountGap = outputs.verdict.value !== 'borrow_less' && askAmount > bindingCap;
 
   const tenureOptions = Array.from(
     new Set([tenureMonths, Math.round((tenureMonths + product.maxTenureMonths) / 2), product.maxTenureMonths]),
@@ -68,6 +85,12 @@ export function StatementScreen({ outputs, askAmount, tenureMonths, onOpenCard, 
             {VERDICT_LABEL[outputs.verdict.value]}
           </div>
           <div style={{ fontSize: 17, lineHeight: 1.45, maxWidth: '44ch' }}>{outputs.verdict.why}</div>
+          {showAmountGap && (
+            <div style={{ fontSize: 14, lineHeight: 1.5, maxWidth: '44ch', color: 'var(--red)' }}>
+              You asked {formatINR(askAmount)}. Based on your numbers, {bindingLabel} is {formatINR(bindingCap)} —
+              what follows is built around that, not the full ask.
+            </div>
+          )}
         </div>
         <div className="statement-col">
           <BandVisual
@@ -103,11 +126,28 @@ export function StatementScreen({ outputs, askAmount, tenureMonths, onOpenCard, 
       <div className="statement-block statement-two-col">
         <div className="statement-col">
           <div className="out">O2 · Two different maximums</div>
-          <OutputRow label="Estimated lender-side maximum" why={outputs.lenderMax.why} value={formatMoneyBand(outputs.lenderMax.value)} color="var(--blue)" />
-          <OutputRow label="You can safely carry ← use this" why={outputs.safeMax.why} value={formatMoneyBand(outputs.safeMax.value)} color="var(--green)" underline />
+          <OutputRow
+            label={`Estimated lender-side maximum${lenderBinds ? ' ← use this' : ''}`}
+            why={outputs.lenderMax.why}
+            value={formatMoneyBand(outputs.lenderMax.value)}
+            color="var(--blue)"
+            underline={lenderBinds}
+          />
+          <OutputRow
+            label={`You can safely carry${lenderBinds ? '' : ' ← use this'}`}
+            why={outputs.safeMax.why}
+            value={formatMoneyBand(outputs.safeMax.value)}
+            color="var(--green)"
+            underline={!lenderBinds}
+          />
           <div style={{ fontSize: 13.5, lineHeight: 1.5, maxWidth: '52ch' }}>
-            The estimated lender-side figure is what a lender's own rule might permit. Yours is what survives a month
-            where something goes wrong. Nobody at the branch will mention the gap.
+            {lenderBinds
+              ? // Review finding 8: for an informal/gig borrower a heavily-discounted
+                // assessed income can put the lender's own ceiling BELOW what the
+                // borrower could actually safely carry — the number to plan around
+                // is still whichever is lower, and here that's the lender's.
+                'Here the lender\'s own ceiling is tighter than what you could safely carry — plan around the lender number, not yours.'
+              : 'The estimated lender-side figure is what a lender\'s own rule might permit. Yours is what survives a month where something goes wrong. Nobody at the branch will mention the gap.'}
           </div>
         </div>
         <div className="statement-col">

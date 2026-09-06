@@ -197,7 +197,17 @@ export const VOLATILE_INCOME_TYPES: readonly IncomeType[] = [
   'informal',
 ];
 
-/** What a LENDER will credit, as a fraction of what the borrower states. */
+/**
+ * What a LENDER will credit, as a fraction of what the borrower states.
+ *
+ * Review finding 8: for informal income this can put lenderMax BELOW
+ * safeMax — the assignment's central framing is "a lender offers more than is
+ * safe," and this is the one income type where it can run the other way. Kept
+ * deliberately (0.5 is already generous — the income.ts why string for this
+ * case says many formal lenders would assess zero) rather than tuned to avoid
+ * the inversion; the UI surfaces whichever number actually binds instead of
+ * hardcoding an assumed direction (see StatementScreen's bindingCap).
+ */
 export const ASSESSED_INCOME_FACTOR: Record<IncomeType, number> = {
   salaried: 1.0,
   self_employed: 1.0, // applied to ITR/12, not to stated cash — see below

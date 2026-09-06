@@ -174,6 +174,18 @@ describe('Anita — informal income, existing distress, productive purpose', () 
   it('is not treated as a straightforward vehicle-loan approval', () => {
     expect(outputs.verdict.value).not.toBe('borrow');
   });
+
+  // Review finding 8 named Anita as the case where informal income's 0.5
+  // assessed-income factor inverts lenderMax > safeMax. Re-checked against the
+  // corrected fixture (Step 0's householdExpenses fix): it does NOT reproduce
+  // here — her real household costs collapse safeMax so far that lenderMax
+  // stays the (much) larger number. The inversion is still reachable for a
+  // different informal borrower (see affordability.test.ts), just not hers.
+  // Locked in as the actual, correct relationship rather than forcing the
+  // review's original claim.
+  it('does NOT show the informal-income inversion once her real household costs are counted — lenderMax stays the larger number', () => {
+    expect(outputs.lenderMax.value.hi).toBeGreaterThan(outputs.safeMax.value.hi);
+  });
 });
 
 describe('honesty — RULES.md §12', () => {

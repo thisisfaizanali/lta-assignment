@@ -96,6 +96,32 @@ describe('age caps effective tenure (review finding 2)', () => {
   });
 });
 
+// Review finding 8: the informal 0.5 assessed-income factor can put lenderMax
+// below safeMax. Anita's persona no longer shows this once her real household
+// costs are stated (see personas.test.ts) — this proves the mechanism is
+// still reachable in principle, for a different informal borrower with very
+// low outgoings and good savings, so the general claim in RULES.md §3 holds.
+describe('the informal-income inversion is still reachable (review finding 8)', () => {
+  it('a low-outgoing informal borrower can safely carry more than a lender would credit', () => {
+    const answers = baseAnswers({
+      purpose: 'consumption',
+      incomeType: 'informal',
+      netMonthlyIncome: 50_000,
+      rent: 0,
+      householdExpenses: 0,
+      existingEmiMonthly: 0,
+      emergencySavingsMonths: 6,
+      dependents: 0,
+      bounceInLast12Months: false,
+    });
+    const income = assessIncome(answers);
+    const { cautious, favourable } = ratesFor(answers);
+    const lenderMax = computeLenderMax(answers, PRODUCTS.personal, income, cautious.band.hi, 'cautious');
+    const safeMaxFavourable = computeSafeMax(answers, income, (favourable.band.lo + favourable.band.hi) / 2, 'favourable');
+    expect(safeMaxFavourable.safeMax.value).toBeGreaterThan(lenderMax.value);
+  });
+});
+
 describe('computeLenderMax — caps', () => {
   it('is floored by the personal-loan income multiple', () => {
     const answers = baseAnswers({ netMonthlyIncome: 20_000, existingEmiMonthly: 0 });

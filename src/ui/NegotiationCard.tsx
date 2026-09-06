@@ -21,7 +21,10 @@ interface NegotiationCardProps {
 export function NegotiationCard({ outputs, askAmount, tenureMonths, onBack }: NegotiationCardProps) {
   const [quote, setQuote] = useState('');
   const product = PRODUCTS[outputs.product.value];
-  const useAmount = Math.min(askAmount, outputs.safeMax.value.hi || askAmount) || askAmount;
+  // Review finding 7/8: whichever of the two maximums is actually lower binds
+  // — not always safeMax (see StatementScreen's same logic).
+  const bindingCap = Math.min(outputs.lenderMax.value.hi || Infinity, outputs.safeMax.value.hi || Infinity);
+  const useAmount = Math.min(askAmount, Number.isFinite(bindingCap) ? bindingCap : askAmount) || askAmount;
   const emiCeiling = outputs.emiCeiling.value.hi;
 
   const quoteRate = Number(quote);
@@ -55,6 +58,12 @@ export function NegotiationCard({ outputs, askAmount, tenureMonths, onBack }: Ne
               {tenureMonths} months
             </div>
           </div>
+          {useAmount < askAmount && (
+            <div style={{ fontSize: 12, color: 'var(--muted)' }}>
+              You asked {formatINR(askAmount)}; this card is built around {formatINR(useAmount)} — the number your own
+              statement says you can actually get.
+            </div>
+          )}
         </div>
 
         <div style={{ marginTop: 18, paddingTop: 14, borderTop: '1px solid var(--rule)', display: 'flex', flexDirection: 'column', gap: 11 }}>
