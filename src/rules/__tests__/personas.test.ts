@@ -72,7 +72,14 @@ const anita: Answers = {
   // short-tenure, high-rate app-loan structure.
   existingEmiMonthly: 3_000,
   rent: 0, // not mentioned
-  householdExpenses: undefined, // not given — let it widen
+  // Not stated in the brief. Left undefined here previously, which let the
+  // cautious pass silently diverge from RUNTHROUGHS.md's published numbers
+  // (real review finding). ₹20,000 is a plausible Hubballi figure for two
+  // children plus a non-earning adult, and stating it keeps her stress test
+  // meaningful — leaving it unstated makes the stress test pass, which
+  // understates her actual exposure. Flagged as an assumption in
+  // RUNTHROUGHS.md alongside her other stated estimates.
+  householdExpenses: 20_000,
   age: 35,
   creditScore: undefined, // not given; NOT assumed bad merely because her situation is hard
   dependents: 3, // two children + a non-earning husband
