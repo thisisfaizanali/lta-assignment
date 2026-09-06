@@ -7,6 +7,10 @@ EMI should you agree to**, then hands you a one-page card to negotiate with. No
 login, no credit bureau pull, no data stored. Everything runs from what you
 type, in your browser, and nothing leaves it.
 
+**Try it:** [lta-assignment.vercel.app](https://lta-assignment.vercel.app/) ·
+no login, nothing stored, runs entirely in your browser. Or run it locally in
+under a minute with the [Setup](#setup) steps below.
+
 Built for the Lokta Borrower Copilot Challenge.
 
 ## What it does
