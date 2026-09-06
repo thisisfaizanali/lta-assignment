@@ -213,3 +213,33 @@ describe('cautious/favourable — the band never inverts', () => {
     }
   });
 });
+
+/**
+ * Review step 3: a regression lock over the headline numbers RUNTHROUGHS.md
+ * publishes. This is what stops the persona fixtures and the doc drifting
+ * again the way Anita did (finding 1) — an unintentional change to any of
+ * these shows up as a snapshot diff that has to be reviewed and re-committed
+ * with `vitest run -u`, not silently shipped. Money values are rounded to the
+ * nearest rupee and rates to 2 decimals purely for a stable, readable diff.
+ */
+function headlineSnapshot(outputs: Outputs) {
+  const round = (n: number) => Math.round(n);
+  const roundBand = (b: { lo: number; hi: number }) => ({ lo: round(b.lo), hi: round(b.hi) });
+  const round2Band = (b: { lo: number; hi: number }) => ({ lo: Number(b.lo.toFixed(2)), hi: Number(b.hi.toFixed(2)) });
+  return {
+    verdict: outputs.verdict.value,
+    product: outputs.product.value,
+    lenderMax: roundBand(outputs.lenderMax.value),
+    safeMax: roundBand(outputs.safeMax.value),
+    rateBand: round2Band(outputs.rateBand.value),
+    aprBand: round2Band(outputs.aprBand.value),
+    emiCeiling: roundBand(outputs.emiCeiling.value),
+    stress: outputs.stress.value,
+  };
+}
+
+describe('headline snapshot — regression lock (review step 3)', () => {
+  it('Priya', () => expect(headlineSnapshot(runEngine(priya))).toMatchSnapshot());
+  it('Ravi', () => expect(headlineSnapshot(runEngine(ravi))).toMatchSnapshot());
+  it('Anita', () => expect(headlineSnapshot(runEngine(anita))).toMatchSnapshot());
+});

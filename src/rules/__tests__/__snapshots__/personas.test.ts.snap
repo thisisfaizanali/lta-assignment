@@ -1,0 +1,94 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`headline snapshot — regression lock (review step 3) > Anita 1`] = `
+{
+  "aprBand": {
+    "hi": 16.11,
+    "lo": 16.11,
+  },
+  "emiCeiling": {
+    "hi": 500,
+    "lo": 500,
+  },
+  "lenderMax": {
+    "hi": 77628,
+    "lo": 77628,
+  },
+  "product": "twowheeler_ev",
+  "rateBand": {
+    "hi": 16,
+    "lo": 14.8,
+  },
+  "safeMax": {
+    "hi": 17836,
+    "lo": 17836,
+  },
+  "stress": {
+    "scenario": "If your income dropped 20%, you would come up short each month.",
+    "survives": false,
+  },
+  "verdict": "fix_something_first",
+}
+`;
+
+exports[`headline snapshot — regression lock (review step 3) > Priya 1`] = `
+{
+  "aprBand": {
+    "hi": 12.26,
+    "lo": 10.66,
+  },
+  "emiCeiling": {
+    "hi": 26000,
+    "lo": 15000,
+  },
+  "lenderMax": {
+    "hi": 1877092,
+    "lo": 1851558,
+  },
+  "product": "personal",
+  "rateBand": {
+    "hi": 11.8,
+    "lo": 10,
+  },
+  "safeMax": {
+    "hi": 798781,
+    "lo": 456850,
+  },
+  "stress": {
+    "scenario": "If your income dropped 20%, you would still cover the EMI.",
+    "survives": true,
+  },
+  "verdict": "borrow_less",
+}
+`;
+
+exports[`headline snapshot — regression lock (review step 3) > Ravi 1`] = `
+{
+  "aprBand": {
+    "hi": 17.56,
+    "lo": 16.95,
+  },
+  "emiCeiling": {
+    "hi": 15000,
+    "lo": 6500,
+  },
+  "lenderMax": {
+    "hi": 570941,
+    "lo": 564819,
+  },
+  "product": "business",
+  "rateBand": {
+    "hi": 17.05,
+    "lo": 15.25,
+  },
+  "safeMax": {
+    "hi": 427557,
+    "lo": 183722,
+  },
+  "stress": {
+    "scenario": "If your income dropped 20%, you would still cover the EMI.",
+    "survives": true,
+  },
+  "verdict": "different_product",
+}
+`;
