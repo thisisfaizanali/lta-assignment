@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { COMMIT_BY_SAVINGS_MONTHS, PRODUCTS } from '../constants';
-import { computeLenderMax, computeSafeMax, computeStressTest } from '../affordability';
+import { COMMIT_BY_SAVINGS_MONTHS, PRODUCTS, PRUDENT_TENURE_MONTHS } from '../constants';
+import { ageTenureCapMonths, computeLenderMax, computeSafeMax, computeStressTest, effectivePrudentTenureMonths } from '../affordability';
 import { assessIncome } from '../income';
 import { computeRate } from '../rate';
 import { baseAnswers } from './fixtures';
@@ -42,6 +42,57 @@ describe('computeLenderMax and computeSafeMax are independent computations', () 
     const lenderMax = computeLenderMax(answers, PRODUCTS.personal, income, cautious.band.hi, 'cautious');
     const safeMax = computeSafeMax(answers, income, (cautious.band.lo + cautious.band.hi) / 2, 'cautious');
     expect(lenderMax.value).not.toBe(safeMax.safeMax.value);
+  });
+});
+
+// Review finding 2: age was a must-question feeding nothing. None of the three
+// personas are old enough for this to bind (decades of headroom each), so this
+// is the test that proves the rule is actually live rather than decorative.
+describe('age caps effective tenure (review finding 2)', () => {
+  it('a 55-year-old home borrower is capped well under the 180-month product max', () => {
+    // Salaried retirement age is 60 -> only 60 months of working life left.
+    expect(effectivePrudentTenureMonths('home', 'salaried', 55)).toBe(60);
+    expect(effectivePrudentTenureMonths('home', 'salaried', 55)).toBeLessThan(PRUDENT_TENURE_MONTHS.home);
+  });
+
+  it('an unstated age caps nothing', () => {
+    expect(effectivePrudentTenureMonths('home', 'salaried', undefined)).toBe(PRUDENT_TENURE_MONTHS.home);
+  });
+
+  it('floors at MIN_TENURE_FLOOR_MONTHS for a borrower already past retirement', () => {
+    expect(ageTenureCapMonths('salaried', 70)).toBe(12);
+  });
+
+  it('lowers safeMax for an older borrower on a long-tenure purpose, all else equal', () => {
+    const young = baseAnswers({ purpose: 'home', age: 30, netMonthlyIncome: 150_000, rent: 20_000, householdExpenses: 20_000 });
+    const old = baseAnswers({ purpose: 'home', age: 55, netMonthlyIncome: 150_000, rent: 20_000, householdExpenses: 20_000 });
+
+    const youngIncome = assessIncome(young);
+    const oldIncome = assessIncome(old);
+    const youngRate = computeRate(young, PRODUCTS.home, 'cautious');
+    const oldRate = computeRate(old, PRODUCTS.home, 'cautious');
+
+    const youngSafe = computeSafeMax(young, youngIncome, (youngRate.band.lo + youngRate.band.hi) / 2, 'cautious');
+    const oldSafe = computeSafeMax(old, oldIncome, (oldRate.band.lo + oldRate.band.hi) / 2, 'cautious');
+
+    expect(oldSafe.tenure).toBe(60);
+    expect(youngSafe.tenure).toBe(PRUDENT_TENURE_MONTHS.home);
+    expect(oldSafe.safeMax.value).toBeLessThan(youngSafe.safeMax.value);
+  });
+
+  it('lowers lenderMax the same way', () => {
+    const young = baseAnswers({ purpose: 'home', age: 30, netMonthlyIncome: 150_000, rent: 20_000, householdExpenses: 20_000 });
+    const old = baseAnswers({ purpose: 'home', age: 55, netMonthlyIncome: 150_000, rent: 20_000, householdExpenses: 20_000 });
+
+    const youngIncome = assessIncome(young);
+    const oldIncome = assessIncome(old);
+    const youngRate = computeRate(young, PRODUCTS.home, 'cautious');
+    const oldRate = computeRate(old, PRODUCTS.home, 'cautious');
+
+    const youngLender = computeLenderMax(young, PRODUCTS.home, youngIncome, youngRate.band.hi, 'cautious');
+    const oldLender = computeLenderMax(old, PRODUCTS.home, oldIncome, oldRate.band.hi, 'cautious');
+
+    expect(oldLender.value).toBeLessThan(youngLender.value);
   });
 });
 

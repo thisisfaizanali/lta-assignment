@@ -322,6 +322,22 @@ The app always shows the maximum-tenure option too, with the extra interest in
 rupees, so the borrower makes the trade with their eyes open. It just doesn't
 recommend it.
 
+**Age caps the prudent tenure further.** Must-question #8 (§10.1) collected age
+but nothing read it until this review — a real gap, found by inspection. Fixed:
+
+| Rule | Value | Why | Source |
+|---|---|---|---|
+| `RETIREMENT_AGE` | Salaried tenure capped at **60**; self-employed / gig / informal at **65** | Common Indian lender norm — tenure should not run past a borrower's working life. | model assumption |
+| `MIN_TENURE_FLOOR_MONTHS` | **12 months**, floor | If age has already passed the retirement figure above, the tenure math still needs a positive, computable number rather than zero or negative. | my judgement |
+
+`ageTenureCapMonths(incomeType, age) = max(MIN_TENURE_FLOOR_MONTHS, (RETIREMENT_AGE − age) × 12)`,
+applied to whichever tenure `computeLenderMax` and `computeSafeMax` would
+otherwise use (the product max, and the prudent tenure above, respectively) —
+never widening it. An unstated age caps nothing. None of the three assignment
+personas are old enough for this to bind; `affordability.test.ts` carries a
+dedicated older-borrower case so the rule is provably live rather than
+decorative.
+
 ---
 
 ## 7. The verdict — O1

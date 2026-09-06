@@ -9,7 +9,7 @@
  * tenure. This is "UI derives a display table from existing math," not
  * duplicated financial logic.
  */
-import { PRODUCTS, PRUDENT_TENURE_MONTHS } from '../rules/constants';
+import { PRODUCTS } from '../rules/constants';
 import { emi, totalInterest } from '../rules/money';
 import type { Outputs } from '../rules/types';
 import { BandVisual } from './Band';
@@ -34,19 +34,19 @@ const VERDICT_COLOR: Record<Outputs['verdict']['value'], string> = {
 interface StatementScreenProps {
   outputs: Outputs;
   askAmount: number;
-  purpose: keyof typeof PRUDENT_TENURE_MONTHS;
+  /** The prudent tenure, already capped by age (see App.tsx / affordability.ts's effectivePrudentTenureMonths). */
+  tenureMonths: number;
   onOpenCard: () => void;
   onChangeAnswer: () => void;
 }
 
-export function StatementScreen({ outputs, askAmount, purpose, onOpenCard, onChangeAnswer }: StatementScreenProps) {
+export function StatementScreen({ outputs, askAmount, tenureMonths, onOpenCard, onChangeAnswer }: StatementScreenProps) {
   const product = PRODUCTS[outputs.product.value];
   const midRate = (outputs.rateBand.value.lo + outputs.rateBand.value.hi) / 2;
-  const prudentTenure = PRUDENT_TENURE_MONTHS[purpose];
   const principal = Math.min(askAmount, outputs.safeMax.value.hi || askAmount) || askAmount;
 
   const tenureOptions = Array.from(
-    new Set([prudentTenure, Math.round((prudentTenure + product.maxTenureMonths) / 2), product.maxTenureMonths]),
+    new Set([tenureMonths, Math.round((tenureMonths + product.maxTenureMonths) / 2), product.maxTenureMonths]),
   ).sort((a, b) => a - b);
 
   const maxScale = Math.max(askAmount, outputs.lenderMax.value.hi) * 1.15;

@@ -410,6 +410,27 @@ export const CONSUMPTION_PURPOSES: readonly Purpose[] = [
   'consumption',
 ];
 
+/**
+ * §5/§6 tenure cap by age — a common Indian lender norm: salaried tenure is
+ * generally capped at 60, self-employed/gig/informal borrowers (no fixed
+ * retirement date) at 65. Applied in affordability.ts to both lenderMax's and
+ * safeMax's tenure, and to the Statement's tenure trade-off table.
+ */
+export const RETIREMENT_AGE: Record<IncomeType, number> = {
+  salaried: 60,
+  self_employed: 65,
+  gig: 65,
+  informal: 65,
+};
+
+/**
+ * Floor so a borrower already at or past their retirement age still gets a
+ * computable (if short) tenure, rather than a zero/negative one breaking the
+ * EMI math. Below this a loan is impractical anyway; the number itself isn't
+ * load-bearing.
+ */
+export const MIN_TENURE_FLOOR_MONTHS = 12;
+
 // ---------------------------------------------------------------------------
 // §7  Verdict gates — ordered, first match wins, evaluated on the CAUTIOUS pass
 // ---------------------------------------------------------------------------

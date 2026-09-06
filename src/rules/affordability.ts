@@ -14,21 +14,40 @@ import {
   FOIR_ABSOLUTE_CAP,
   FOIR_HIGH_INCOME_THRESHOLD,
   FOIR_SECURED_BONUS,
+  MIN_TENURE_FLOOR_MONTHS,
   PERSONAL_LOAN_INCOME_MULTIPLE,
   PRUDENT_TENURE_MONTHS,
+  RETIREMENT_AGE,
   STRESS_FAIL_EMI_RATIO,
   STRESS_INCOME_DROP,
   STRESS_RATE_RISE_PP,
   TOTAL_EMI_CAP,
   UNKNOWNS,
   VOLATILE_INCOME_TYPES,
+  type IncomeType,
   type Product,
+  type Purpose,
   type Stance,
 } from './constants';
 import { lenderLtvFor } from './products';
 import { principalFromEmi } from './money';
 import { resolveUnknown, type Answers, type Explained } from './types';
 import type { IncomeAssessment } from './income';
+
+/**
+ * Age-based tenure ceiling (RULES.md §5/§6 addition). Undefined age caps
+ * nothing — age is a must-question but skippable at the engine level like the
+ * rest of the must-set (see types.ts's Answers comment).
+ */
+export function ageTenureCapMonths(incomeType: IncomeType, age: number | undefined): number {
+  if (age === undefined) return Infinity;
+  return Math.max(MIN_TENURE_FLOOR_MONTHS, (RETIREMENT_AGE[incomeType] - age) * 12);
+}
+
+/** The purpose's prudent tenure, capped by how many working months age leaves. */
+export function effectivePrudentTenureMonths(purpose: Purpose, incomeType: IncomeType, age: number | undefined): number {
+  return Math.min(PRUDENT_TENURE_MONTHS[purpose], ageTenureCapMonths(incomeType, age));
+}
 
 /** §5's FOIR selection, before the secured bonus and absolute cap. */
 function baseFoir(answers: Answers): number {
@@ -56,8 +75,9 @@ export function computeLenderMax(
   const lenderIncome = income.assessedIncome.value + income.coApplicant.value.lenderAddOn;
 
   const availableEmi = Math.max(0, foir * lenderIncome - existingEmi.value);
-  const tenure =
+  const productTenure =
     answers.incomeType === 'self_employed' ? product.maxTenureMonthsSelfEmployed ?? product.maxTenureMonths : product.maxTenureMonths;
+  const tenure = Math.min(productTenure, ageTenureCapMonths(answers.incomeType, answers.age));
 
   let principal = availableEmi > 0 ? principalFromEmi(availableEmi, topRatePercent, tenure) : 0;
 
@@ -78,8 +98,8 @@ export function computeLenderMax(
 
   return {
     value: Math.max(0, principal),
-    why: `Modelled from a ${(foir * 100).toFixed(0)}% FOIR on your ${product.secured ? 'secured' : 'unsecured'} eligibility, at the top of your rate band over ${tenure} months${caps.length ? `, floored by ${caps.join(' and ')}` : ''}. This is a model of likely lender behaviour, not a sanction.`,
-    from: ['netMonthlyIncome', 'incomeType', 'existingEmiMonthly', 'collateralValue'],
+    why: `Modelled from a ${(foir * 100).toFixed(0)}% FOIR on your ${product.secured ? 'secured' : 'unsecured'} eligibility, at the top of your rate band over ${tenure} months${tenure < productTenure ? ' (shortened from the product max by your age)' : ''}${caps.length ? `, floored by ${caps.join(' and ')}` : ''}. This is a model of likely lender behaviour, not a sanction.`,
+    from: ['netMonthlyIncome', 'incomeType', 'existingEmiMonthly', 'collateralValue', 'age'],
   };
 }
 
@@ -118,6 +138,8 @@ export interface SafeMaxResult {
   trueIncomeForSurplus: number;
   householdExpenses: number;
   existingEmi: number;
+  /** The prudent tenure actually used, after the age cap — computeStressTest reuses this rather than re-deriving it. */
+  tenure: number;
 }
 
 /**
@@ -154,7 +176,7 @@ export function computeSafeMax(
   const rawCeiling = Math.min(surplusCeiling, totalEmiCeiling);
   const emiCeiling = Math.floor(rawCeiling / EMI_CEILING_ROUNDING) * EMI_CEILING_ROUNDING;
 
-  const tenure = PRUDENT_TENURE_MONTHS[answers.purpose];
+  const tenure = effectivePrudentTenureMonths(answers.purpose, answers.incomeType, answers.age);
   const safeMaxValue = emiCeiling > 0 ? principalFromEmi(emiCeiling, midRatePercent, tenure) : 0;
 
   return {
@@ -175,6 +197,7 @@ export function computeSafeMax(
     trueIncomeForSurplus,
     householdExpenses: householdExpensesResolved.value,
     existingEmi: existingEmi.value,
+    tenure,
   };
 }
 
@@ -200,7 +223,7 @@ export function computeStressTest(
   let rateRiseFails = false;
   if (product.floating && safeMaxCautious.safeMax.value > 0) {
     const stressedRate = midRatePercent + STRESS_RATE_RISE_PP;
-    const tenure = PRUDENT_TENURE_MONTHS[answers.purpose];
+    const tenure = safeMaxCautious.tenure;
     const stressedEmi = safeMaxCautious.safeMax.value * (stressedRate / 100 / 12) * Math.pow(1 + stressedRate / 100 / 12, tenure) / (Math.pow(1 + stressedRate / 100 / 12, tenure) - 1);
     const postEmi = safeMaxCautious.surplus - stressedEmi;
     rateRiseFails = postEmi < 0 || (safeMaxCautious.existingEmi + stressedEmi) / safeMaxCautious.trueIncomeForSurplus > STRESS_FAIL_EMI_RATIO;

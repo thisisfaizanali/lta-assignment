@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
+import { effectivePrudentTenureMonths } from './rules/affordability';
 import { runEngine } from './rules/engine';
-import { PRUDENT_TENURE_MONTHS, type Purpose } from './rules/constants';
+import type { Purpose } from './rules/constants';
 import type { Answers } from './rules/types';
 import { NegotiationCard } from './ui/NegotiationCard';
 import { OpeningScreen } from './ui/OpeningScreen';
@@ -20,6 +21,7 @@ export default function App() {
   // (QuestionFlow disables Skip on those five) — this cast is safe.
   const complete = answers as Answers;
   const outputs = useMemo(() => (screen === 'sharpen' || screen === 'statement' || screen === 'card' ? runEngine(complete) : undefined), [screen, complete]);
+  const tenureMonths = outputs ? effectivePrudentTenureMonths(complete.purpose, complete.incomeType, complete.age) : 0;
 
   if (screen === 'opening') {
     return (
@@ -51,7 +53,7 @@ export default function App() {
       <StatementScreen
         outputs={outputs}
         askAmount={complete.askAmount}
-        purpose={complete.purpose}
+        tenureMonths={tenureMonths}
         onOpenCard={() => setScreen('card')}
         onChangeAnswer={() => setScreen('sharpen')}
       />
@@ -63,7 +65,7 @@ export default function App() {
       <NegotiationCard
         outputs={outputs}
         askAmount={complete.askAmount}
-        tenureMonths={PRUDENT_TENURE_MONTHS[complete.purpose]}
+        tenureMonths={tenureMonths}
         onBack={() => setScreen('statement')}
       />
     );
