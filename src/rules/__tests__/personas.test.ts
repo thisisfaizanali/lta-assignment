@@ -151,6 +151,13 @@ describe('Ravi — self-employed, thin file, unencumbered collateral', () => {
     // and safeMax are materially different numbers.
     expect(Math.abs(outputs.lenderMax.value.lo - outputs.safeMax.value.lo)).toBeGreaterThan(1);
   });
+
+  // Review finding 3: he's a thin-file borrower on an unsecured product
+  // (business, never_borrowed) — the rate band must say so, not price him as
+  // if unsecured credit is freely available.
+  it('warns that unsecured credit may not be available to him', () => {
+    expect(outputs.rateBand.why.toLowerCase()).toContain('decline');
+  });
 });
 
 describe('Anita — informal income, existing distress, productive purpose', () => {

@@ -162,6 +162,8 @@ function ltvDelta(product: Product, answers: Answers): Delta {
 export interface PersonalRate {
   band: Band; // percent
   deltas: Delta[];
+  /** False when a thin-file borrower is priced on an unsecured product — see scoreDelta. Review finding 3: previously computed and discarded. */
+  unsecuredAvailable: boolean;
 }
 
 /**
@@ -194,7 +196,7 @@ export function computeRate(answers: Answers, product: Product, stance: Stance):
   let anchor = base_lo + sum;
   anchor = Math.max(base_lo, Math.min(anchor, base_hi - BAND_FLOOR_WIDTH_PP));
 
-  return { band: { lo: anchor, hi: anchor + BAND_FLOOR_WIDTH_PP }, deltas };
+  return { band: { lo: anchor, hi: anchor + BAND_FLOOR_WIDTH_PP }, deltas, unsecuredAvailable: score.unsecuredAvailable || secured };
 }
 
 /**

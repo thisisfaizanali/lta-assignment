@@ -118,7 +118,15 @@ export function runEngine(answers: Answers): Outputs {
         Math.min(cautious.rate.band.lo, favourable.rate.band.lo),
         Math.max(cautious.rate.band.hi, favourable.rate.band.hi),
       ),
-      why: 'Base band for this product, adjusted for your score, profile, utilisation and any bounce — widened to reflect what you have and haven\'t told us.',
+      // unsecuredAvailable doesn't vary by stance for the case it flags (a
+      // thin file on an unsecured product), so either pass's value is fine —
+      // see rate.ts's scoreDelta. Review finding 3: this used to be computed
+      // and silently discarded.
+      why:
+        'Base band for this product, adjusted for your score, profile, utilisation and any bounce — widened to reflect what you have and haven\'t told us.' +
+        (cautious.rate.unsecuredAvailable
+          ? ''
+          : ' As a first-time borrower with no collateral, lenders may decline an unsecured application outright — this band prices the loan, not the odds of getting it.'),
       from: ['creditScore', 'cardUtilisation', 'bounceInLast12Months'],
     },
     aprBand: {

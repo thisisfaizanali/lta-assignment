@@ -112,7 +112,7 @@ export function StatementScreen({ outputs, askAmount, tenureMonths, onOpenCard, 
         </div>
         <div className="statement-col">
           <div className="out">O3 · A fair rate, and the real one</div>
-          <OutputRow label="Fair interest rate" why="" value={formatPercentBand(outputs.rateBand.value)} />
+          <OutputRow label="Fair interest rate" why={outputs.rateBand.why} value={formatPercentBand(outputs.rateBand.value)} />
           <OutputRow label="All-in APR, fees included" why="" value={formatPercentBand(outputs.aprBand.value)} underline />
           <div style={{ fontSize: 13.5, lineHeight: 1.5, maxWidth: '52ch' }}>
             Compare a quote against the second row, never the first — the APR is what you actually pay once fees and

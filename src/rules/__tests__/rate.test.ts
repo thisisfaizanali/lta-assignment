@@ -55,6 +55,15 @@ describe('computeRate — score tiers', () => {
     expect(unsecured.deltas[0].value).toBe(0);
     expect(unsecured.deltas[0].label.toLowerCase()).toMatch(/decline|first-time/);
   });
+
+  // Review finding 3: unsecuredAvailable was computed and then discarded —
+  // the rate band contradicted its own why string. Now surfaced on the band.
+  it('flags unsecuredAvailable false for a thin file on an unsecured product, true on secured', () => {
+    const unsecured = computeRate(baseAnswers({ creditScore: 'never_borrowed' }), PRODUCTS.personal, 'cautious');
+    const secured = computeRate(baseAnswers({ creditScore: 'never_borrowed' }), PRODUCTS.lap, 'cautious');
+    expect(unsecured.unsecuredAvailable).toBe(false);
+    expect(secured.unsecuredAvailable).toBe(true);
+  });
 });
 
 describe('computeRate — cautious vs favourable widens the band for an unknown score', () => {
