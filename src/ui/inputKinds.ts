@@ -51,6 +51,21 @@ export const INPUT_KIND: Partial<Record<QuestionId, InputKind>> = {
   isElectricVehicle: 'boolean',
 };
 
+/**
+ * Not every `percent` field is stored the same way, and conflating them silently
+ * changes someone's rate.
+ *
+ * `cardUtilisation` is documented in types.ts as a 0..1 fraction and compared
+ * against `CARD_UTILISATION_HIGH` (0.7), so a typed "20" must become 0.2.
+ * `existingDebtAPR` is a whole-number annual rate compared against
+ * `COSTLY_DEBT_THRESHOLD_APR` (24.0), so a typed "32" must stay 32.
+ *
+ * Divide by this on the way in, multiply by it when re-showing a stored answer.
+ */
+export function percentScaleFor(id: QuestionId): number {
+  return id === 'cardUtilisation' ? 100 : 1;
+}
+
 export const PURPOSE_LABELS: Record<string, string> = {
   wedding: 'A wedding',
   business: 'Business stock or equipment',

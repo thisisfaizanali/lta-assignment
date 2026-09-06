@@ -6,7 +6,7 @@ import { useState } from 'react';
 import type { Purpose, ScoreAnswer } from '../rules/constants';
 import type { Question } from '../rules/questions';
 import type { Answers } from '../rules/types';
-import { INCOME_TYPE_LABELS, INPUT_KIND, PURPOSE_LABELS } from './inputKinds';
+import { INCOME_TYPE_LABELS, INPUT_KIND, PURPOSE_LABELS, percentScaleFor } from './inputKinds';
 
 interface QuestionCardProps {
   question: Question;
@@ -21,9 +21,16 @@ interface QuestionCardProps {
 export function QuestionCard({ question, answers, onAnswer, onSkip, onBack, skippable = true }: QuestionCardProps) {
   const kind = INPUT_KIND[question.id] ?? 'number';
   const current = answers[question.id];
-  const [draft, setDraft] = useState<string>(current !== undefined && typeof current !== 'object' ? String(current) : '');
+  // Stored 0.2 has to read back as "20" in a field suffixed with %, or editing an
+  // existing answer would divide it a second time.
+  const scale = percentScaleFor(question.id);
+  const [draft, setDraft] = useState<string>(
+    current !== undefined && typeof current !== 'object'
+      ? String(typeof current === 'number' ? current * scale : current)
+      : '',
+  );
 
-  function submitNumeric(scale = 1) {
+  function submitNumeric() {
     const n = Number(draft);
     if (draft.trim() !== '' && !Number.isNaN(n)) {
       onAnswer({ [question.id]: n / scale } as Partial<Answers>);
@@ -95,7 +102,7 @@ export function QuestionCard({ question, answers, onAnswer, onSkip, onBack, skip
                 inputMode="decimal"
                 value={draft}
                 onChange={(e) => setDraft(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && submitNumeric(kind === 'percent' ? 1 : 1)}
+                onKeyDown={(e) => e.key === 'Enter' && submitNumeric()}
                 aria-label={question.prompt}
                 autoFocus
               />

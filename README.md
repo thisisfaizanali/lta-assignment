@@ -75,7 +75,7 @@ backend, no database.
 ```bash
 npm install
 npm run dev         # http://localhost:5173
-npm test            # 154 tests across the rules engine
+npm test            # 158 tests across the rules engine
 npm run typecheck
 npm run build
 ```
