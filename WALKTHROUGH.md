@@ -1,114 +1,164 @@
 # Walkthrough
 
-A five-minute tour of the app, timed as a recording script. Full reasoning
-behind every number is in [RULES.md](RULES.md); real output for all three
-personas is in [RUNTHROUGHS.md](RUNTHROUGHS.md).
+A short tour of what the app does, why it is built this way, and what I would
+change next. Every threshold and its reasoning is in [RULES.md](RULES.md). Real
+output for all three personas, captured from the running app, is in
+[RUNTHROUGHS.md](RUNTHROUGHS.md).
 
-## 0:00 The problem (30s)
+## The problem
 
-A lender has a model that decides what a borrower gets. The borrower usually has
-nothing, and finds out three years later that they paid four points over fair
-and stretched to 65% of their income. Borrower Copilot is a self-assessment that
-makes the borrower the best-informed person in the room before they walk in:
-what a lender will likely offer, what they can actually safely carry, a fair
-rate, and an EMI ceiling, with a one-page card to negotiate with.
+A lender has a model that decides what a borrower gets. The borrower has
+nothing. They walk in blind, take the first sanction letter, and find out three
+years later that they paid four points over fair and stretched to 65% of their
+income.
 
-## 0:30 Adaptive questions (60s)
+Borrower Copilot is the borrower's half of that conversation. It answers four
+questions before they walk in, and hands them one page to negotiate with.
 
-*Show:* the opening screen (pick a purpose), then a few must-questions with the
-live estimate rail updating on the right.
+## The flow
 
-The must-set is ten questions, fixed for everyone. Everything after that adapts.
-A salaried employee sees "years at your current employer"; a self-employed
-borrower sees ITR income, business vintage and GST/current-account evidence
-instead, never both. And every optional question is only offered if it can
-actually change something: the Sharpen screen runs the real engine on each
-candidate question's two plausible answers and shows it only if an output
-genuinely moves. Two borrowers with identical must-answers can end up with
-completely different optional question lists.
+The borrower picks a purpose, answers ten must-questions, and gets a usable
+statement. Everything after that is optional and adaptive.
 
-## 1:30 Lender max vs. safe max (60s)
+Two things make the question set work. First, it branches on income type: a
+salaried employee is asked about employer tenure, a self-employed borrower is
+asked about ITR income, business vintage and GST evidence instead. Neither sees
+the other's questions. Second, and more important, an optional question is only
+offered if it can actually change that borrower's result. The Sharpen screen
+runs the real engine on each candidate question's two plausible answers, diffs
+the outputs, and shows the question only if something moved. The screen displays
+what each one is worth before you answer it, for example "safe to carry
+±₹1,20,000".
 
-*Show:* the Statement screen's O2 section, ideally Ravi's (biggest gap).
+That check is code, not a promise. It also means two borrowers with identical
+must-answers can end up with completely different optional question lists.
 
-This is the core of the product. "What a lender will likely offer" and "what you
-can safely carry" are two *different formulas*, not one number with a haircut
-applied. The lender number models FOIR against your *documented* income. The
-safe number models your real surplus against your *bad-month* income, and
-deliberately leaves half of it uncommitted as a buffer. For Ravi, self-employed,
-ITR showing ₹35,000/month against real cash flow of ₹40,000 to ₹80,000, the two
-numbers are nearly ₹1.4 lakh apart. Nobody at a branch volunteers that gap.
+## The core idea: two maximums
 
-## 2:30 Rate, APR, and the EMI ceiling (60s)
+This is the part of the product I care most about.
 
-*Show:* O3 and O4 on the Statement.
+"What a lender will likely offer" and "what you can safely carry" are two
+different formulas, not one number with a haircut applied to it.
+
+The lender number models FOIR against *assessed* income, meaning what a lender
+will actually credit. The safe number models real surplus against *true*
+income, meaning the borrower's bad month, and deliberately leaves part of that
+surplus uncommitted as a buffer.
+
+For a salaried borrower the two land reasonably close. For everyone else they
+come apart, and the gap is the whole point:
+
+- **Priya** is cleared for roughly ₹18.6 lakh by a lender's own rule, but her
+  rent, car EMI and living costs leave room for ₹4.6 to ₹8.0 lakh.
+- **Ravi** is credited only his ITR income of about ₹35,000 a month, while his
+  shop actually takes ₹40,000 to ₹80,000. The formal system cannot see most of
+  what he earns.
+
+Nobody at a branch volunteers that gap. The Statement shows both numbers side by
+side and points at whichever one actually binds.
+
+## Rate, APR, and the EMI ceiling
 
 The rate is shown as a band, and stays a band even for a fully answered profile,
-because a floor width is built in: pretending to more precision than the inputs
-support would be dishonest. Below it sits the *all-in APR*, the nominal rate plus
-processing fee and GST, solved as an actual IRR on the real cash flow, matching
-how RBI's own Key Fact Statement computes it. The gap between the headline rate
-and the APR is exactly what a fee-heavy short loan hides. The EMI ceiling comes
-with the tenure trade-off shown honestly: stretching the term lowers the EMI and
-raises the total interest, and the app does not recommend the longer one just
-because the number looks smaller.
+because claiming a single number would be claiming more precision than
+self-reported inputs support. Where a band does collapse to a point, the app says
+which of the two possible reasons applies: either the profile is pinned at the
+product's ceiling, or the borrower answered everything that number depends on.
 
-## 3:30 The Negotiation Card (45s)
+Underneath sits the all-in APR: the nominal rate plus processing fee and GST,
+solved as an actual IRR on the real cash flow, annualised the way RBI's Key Fact
+Statement does it (monthly IRR × 12, not effective compounding). That matters
+because it makes our number directly comparable to the one the lender must hand
+over. The gap between a headline rate and the true APR is exactly what a
+fee-heavy short loan hides.
 
-*Show:* opening the Card from the Statement.
+The EMI ceiling comes with the tenure trade-off laid out in rupees. A longer term
+lowers the monthly number and raises the total cost. The app shows that
+honestly and does not recommend the longer one just because the EMI reads better.
 
-One phone-sized screen: what I'm asking for, what's fair for me, why in my own
-numbers, and what I will not agree to. Type in a lender's quoted rate and it
-tells you exactly how many rupees more that is than the middle of your own band,
-over the real tenure. That is the one line designed to be read out loud across a
-desk.
+## The Negotiation Card
 
-## 4:15 Priya, Ravi, Anita (30s)
+One phone-sized screen: what I am asking for, what is fair for me, why in my own
+numbers, and what I will not agree to.
 
-*Show:* verdict headlines only, back to back.
+Type a lender's quoted rate into it and it tells you how many rupees more that is
+than the middle of your own band over the real tenure. That is the line designed
+to be read out loud across a desk.
 
-Same engine, three genuinely different verdicts. Priya, salaried with a strong
-profile, gets **borrow less**: her ask sits just above what she can safely carry.
-Ravi, self-employed and sitting on unencumbered property, gets **a different
-product**: the app tells him to ask about a government collateral-free scheme
-*before* it will let him pledge his shop.
+Where the ask exceeds what the borrower can get, the Card says so rather than
+quietly substituting a smaller number. Ravi's Card states that he asked for
+₹15,00,000 and is built around ₹4,27,557.
 
-That last one is a deliberate call worth stating plainly, because routing him
-straight to a secured loan was both easier to build and genuinely cheaper. Loan
-against property prices him at 12.75% to 14% for nearly his full ₹15L ask,
-against 15.25% to 17.05% unsecured. The app still declines to recommend it: that
-property is his sole means of earning, and a defaulted LAP costs him the shop,
-not just the collateral. The cheaper product is not automatically the right one.
+## The three borrowers
 
-Anita, on informal income and already carrying 30%+ debt, gets **fix something
-first**: her scooter would likely pay for itself, but the app refuses to let that
-override the fact that her existing debt is more expensive than any loan it would
-offer her.
+Same engine, three genuinely different answers.
 
-## 4:45 One important limitation (15s)
+**Priya** gets **borrow less**. Her ask sits just above what she can safely
+carry. She is close, not reckless, and the verdict says so.
 
-The two numbers that matter most in the safety model, how much of your surplus is
-safe to commit and how much of a productive purpose's projected earnings to
-credit, are judgement calls rather than derived figures. They are labelled as
-such in RULES.md, and they are exactly the kind of thing I would expect to defend
-and change live in a follow-up conversation.
+**Ravi** gets **a different product**. He is self-employed with a ₹15,00,000 ask
+that sits inside the ₹20,00,000 Mudra collateral-free limit, so the app tells him
+to ask about that before pledging anything.
 
----
+**Anita** gets **fix something first**. Her scooter would likely pay for itself,
+but her existing app loans at 30%+ are more expensive than any rate this app
+would quote her. The app refuses to let a productive purpose override that.
+
+### The Ravi decision, stated plainly
+
+Ravi owns his shop premises outright, worth about three times his ask, and
+routing him to a loan against it was both easier to build and genuinely cheaper.
+The numbers are real: LAP would price him at **12.75% to 14.0%** with a
+lender-side maximum near **₹13.6 lakh**, close to his full ask, against
+**15.25% to 17.05%** unsecured.
+
+The app still declines to recommend it, because that property is not just
+collateral, it is his only source of income. If the business has a bad year, a
+defaulted LAP costs him the shop as well as the loan. A government scheme can
+reach a comparable amount without that risk, so the app surfaces it first and
+explains the trade rather than optimising for the lowest rate.
+
+I expect this to be challenged, so the app shows the LAP numbers alongside the
+recommendation instead of hiding the road not taken. The cheaper product is not
+automatically the right one.
+
+## Where it is guessing
+
+The two numbers that matter most in the safety model are judgement calls, not
+derived figures: how much of a borrower's surplus may become a fixed obligation,
+and how much of a productive purpose's projected earnings to credit. Both are
+labelled as judgement in RULES.md, which classifies every threshold as
+source-backed, model assumption, or my judgement. Roughly a quarter are
+source-backed and the rest are not, which is the honest picture of retail
+lending in India, where the arithmetic is public and the underwriting policy is
+not.
+
+The informal-income path is the weakest part of the model, and it is also where
+the borrower most needs help. Anita is currently told mostly what she cannot
+have. That is honest, but it is not yet useful enough.
 
 ## What I'd build next
 
-- A real question-order optimiser for the Sharpen screen. It currently ranks by
-  impact magnitude but does not account for how cheap a question is to answer
-  relative to its value.
-- A second, independently sourced rate card, to cross-check the "model
-  assumption" tier of RULES.md's rate deltas against more than one source.
-- Local session persistence, still device-only and never sent anywhere, so a
-  borrower can leave and come back without re-answering everything.
+- **A refinance path for Anita.** Today the app tells her to clear 30%+ debt
+  first and stops. The more useful product would size a consolidation that
+  refinances the app loans and the scooter together, which is the answer she
+  actually needs.
+- **A question-order optimiser.** The Sharpen screen ranks by impact magnitude
+  but ignores how hard a question is to answer. A borrower who does not know
+  their card utilisation should not be asked for it ahead of something easier
+  and nearly as valuable.
+- **A second, independently sourced rate card**, to cross-check the model
+  assumption tier of RULES.md's rate deltas against more than one source.
+- **Local session persistence**, still device-only and never transmitted, so a
+  borrower can leave and come back without starting over.
 
 ## What I'd cut if I had less time
 
-- The tenure trade-off table (O4). Useful, but the verdict and the two maximums
-  are what actually change someone's decision.
-- The live-updating rail during the question flow. Nice to have, but the
-  Statement at the end carries the real weight; the rail is polish, not the core
+- **The tenure trade-off table.** Useful context, but the verdict and the two
+  maximums are what actually change someone's decision.
+- **The live-updating rail during the question flow.** Pleasant, but the
+  Statement at the end carries the real weight. The rail is polish, not the core
   claim.
+- **Three of the six products.** Gold, home and unsecured business are coarse
+  and marked as such in RULES.md. Only the three the personas reach are properly
+  tuned, and shipping fewer, better products would have been the honest trade.
