@@ -16,7 +16,7 @@ import { runEngine } from '../rules/engine';
 import { applicableOptionalQuestions, type ImpactedOutput } from '../rules/questions';
 import type { Answers } from '../rules/types';
 import { QuestionCard } from './QuestionCard';
-import { formatINR } from './format';
+import { formatINR, formatMoneyBand, formatPercentBand } from './format';
 
 const OUTPUT_LABEL: Record<ImpactedOutput['output'], string> = {
   verdict: 'the verdict',
@@ -89,8 +89,8 @@ export function SharpenScreen({ answers, onAnswer, onFinish }: SharpenScreenProp
           </div>
         </div>
         <div className="sharpen-current">
-          <SummaryRow label="Safe to carry, today" value={`${formatINR(outputs.safeMax.value.lo)} – ${formatINR(outputs.safeMax.value.hi)}`} color="var(--green)" />
-          <SummaryRow label="Fair rate, today" value={`${outputs.rateBand.value.lo.toFixed(1)}% – ${outputs.rateBand.value.hi.toFixed(1)}%`} />
+          <SummaryRow label="Safe to carry, today" value={formatMoneyBand(outputs.safeMax.value)} color="var(--green)" />
+          <SummaryRow label="Fair rate, today" value={formatPercentBand(outputs.rateBand.value)} />
         </div>
       </div>
 

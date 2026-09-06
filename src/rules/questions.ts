@@ -326,8 +326,8 @@ export function isMustSetComplete(answers: Partial<Answers>): boolean {
   return MUST_QUESTIONS.every((q) => answers[q.id] !== undefined);
 }
 
-const EPS_MONEY = 100; // rupees — well above rounding noise, well below a meaningful movement
-const EPS_PERCENT = 0.05; // percentage points
+export const EPS_MONEY = 100; // rupees — well above rounding noise, well below a meaningful movement
+export const EPS_PERCENT = 0.05; // percentage points
 
 function bandDiffers(a: Band, b: Band, epsilon: number): boolean {
   return Math.abs(a.lo - b.lo) > epsilon || Math.abs(a.hi - b.hi) > epsilon;
